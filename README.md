@@ -1,26 +1,28 @@
 # Principal Components Analysis and Factor Analysis
 
-## Abstract: The **health.csv** data set is made up of 15 self-reported health items for a study conducted by Tobinco Health Advisors. Participants were required to answer questions on a scale from 1 to 20. With 1 indicating a very negative response to  the question and 20 being a very positive response to the question. They also collected information on Type of diet and Body type of the 450 subjects. 
+## Abstract: 
+
+The **health.csv** data set is made up of 15 self-reported health items for a study conducted by Tobinco Health Advisors. Participants were required to answer questions on a scale from 1 to 20. With 1 indicating a very negative response to  the question and 20 being a very positive response to the question. They also collected information on the Type of diet and Body type of the 450 subjects. 
 
 ## Key findings:
 
-- The differences in diet type based in the answer of 15 questions are not large
+- The differences in diet type based on the answer to 15 questions are not large
 
-- The differences in body type based in the answer are noticeable:
+- The differences in body type based on the answer are noticeable:
 
-+   Ectomoprh body type answered highly in average for the first five questions, meaning in average, they find themselves are physically fit enough
++   Ectomorph body type answered highly on average for the first five questions, meaning on average, they find themselves physically fit enough
 
-+   Endomoprh body type answered highly in average for the question 6 - 10, meaning in average, they find themselves are heathy mentally.
++   Endomorph body type answered highly on average for questions 6 - 10, meaning on average, they find themselves heathy mentally.
 
-+   Mensomoprh body type answered highly in average for the question 11 - 15, meaning in average, they find meaning connections and socially accepted.
++   Mensomoprh body type answered highly on average for questions 11 - 15, meaning that on average, they find meaning connections and are socially accepted.
 
-- With Principle Component Analysis, the difference in the answers between three groups are visible.
+- With Principle Component Analysis, the difference in the three groups' answers is visible.
 
-- With Factor Analysis, there are two latent factors: ML2 (question 1 - 5) indicating physical health and ML1 (question 6-15) indicating mental health and social connections
+- With Factor Analysis, there are two latent factors: ML2 (questions 1 - 5) indicating physical health, and ML1 (question 6-15) indicating mental health and social connections
 
 ## Data Variables
 
-Below are the description of the questions/variables:
+Below are the descriptions of the questions/variables:
 
 Q1. I feel physically fit and healthy.
 
