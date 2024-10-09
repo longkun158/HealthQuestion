@@ -1,4 +1,4 @@
-# Principal Components Analysis and Factor Analysis
+# Principal Components Analysis and Factor Analysis (In R)
 
 ## Abstract: 
 
