@@ -1,0 +1,243 @@
+---
+title: "Principal Components Analysis and Factor Analysis"
+author: Long Pham
+output:
+  pdf_document: default
+  html_document: default
+  word_document: default
+---
+
+# 1. EDA:
+
+```{r}
+dfraw = read.csv("health.csv", header=TRUE)
+str(dfraw)
+df = dfraw[,-c(16:17)]
+```
+
+```{r}
+# View the first few rows of the dataset
+head(dfraw)
+
+# Summary statistics for the entire dataset
+summary(dfraw)
+```
+
+## Checking NA values
+
+```{r}
+# Check for missing values
+sum(is.na(df))
+
+# Find the number of missing values per column
+colSums(is.na(df))
+```
+
+```{r}
+# Frequency of each body type
+table(dfraw$body_type)
+
+# Bar plot of body types
+barplot(table(dfraw$body_type), main = "Distribution of Body Types", col = "lightblue", ylab = "Frequency")
+```
+
+```{r}
+# Create boxplots for the first question by body type (Q1 as an example)
+boxplot(dfraw$Q1 ~ dfraw$body_type, main = "Responses to Q1 by Body Type",
+        xlab = "Body Type", ylab = "Q1 Score", col = "lightgreen")
+
+for (i in 1:15) {
+    boxplot(dfraw[, i] ~ dfraw$body_type, main = paste("Responses to Q", i, "by Body Type"),
+            xlab = "Body Type", ylab = paste("Q", i, "Score"), col = "lightgreen")
+}
+```
+
+```{r}
+# Calculate and visualize the correlation matrix
+cor_matrix <- cor(df, use = "complete.obs")
+print(cor_matrix)
+
+# Visualize the correlation matrix
+library(corrplot)
+corrplot(cor_matrix, method = "circle", type = "upper", tl.cex = 0.8, title = "Correlation Matrix of Questions")
+
+```
+
+```{r}
+# Create boxplots for the first question by diet type
+boxplot(dfraw$Q1 ~ dfraw$diet, main = "Responses to Q1 by Diet Type",
+        xlab = "Diet Type", ylab = "Q1 Score", col = "lightblue")
+
+# Loop through all questions for boxplots by diet type
+for (i in 1:15) {
+    boxplot(dfraw[, i] ~ dfraw$diet, main = paste("Responses to Q", i, "by Diet Type"),
+            xlab = "Diet Type", ylab = paste("Q", i, "Score"), col = "lightblue")
+}
+```
+
+**Conclusion about EDA**:
+
+- The data is clean and has no outlier
+
+- The differences in diet type based in the answer of 15 questions are not large
+
+- The differences in body type based in the answer are noticeable:
+
++   Ectomoprh body type answered highly in average for the first five questions, meaning in average, they find themselves are physically fit enough
+
++   Endomoprh body type answered highly in average for the question 6 - 10, meaning in average, they find themselves are heathy mentally.
+
++   Mensomoprh body type answered highly in average for the question 11 - 15, meaning in average, they find meaning connections and socially accepted.
+
+
+
+# 2. Using PCA analysis:
+
+```{r}
+pca_result <- prcomp(df, scale. = TRUE)
+```
+
+
+```{r}
+library("factoextra")
+fviz_eig(pca_result)
+```
+*Conclusion*: Keeping 2 Principal Componants
+
+```{r}
+body_types <- as.factor(dfraw$body_type)
+unique_body_types <- unique(body_types)
+colors <- 1:length(unique_body_types) 
+
+plot(pca_result$x[, 1:2], col = colors[body_types], pch = 19,
+     xlab = "Principal Component 1", ylab = "Principal Component 2",
+     main = "PCA of Body Types based on 15 Questions")
+
+legend("topright", legend = unique_body_types, col = colors, pch = 19)
+
+```
+
+*Conclusion*: Based on the PC Mapping, we can say that each body types are very unique to each other, and very difficult to group them. If we isolate each componant, we can explain like this:
+
+- If we consider mainly Principal Compnent 1, Ectomoprh and Mesomoprh body types are more similar to Endomoprh
+
+- If we consider mainly Principal Component 2, we have three body types are equally different.
+
+As a result, Ectomoprh and Mesomoprh body types are more similar to Endomoprh
+
+# 3. Comprehensive Factor Analysis
+
+## Checking data set
+
+### Correlation Test and sample adequacy test
+
+$H_0$: There are no significant correlation (Correlation matrix = identity matrix)
+$H_a$: There are significant correlations.
+
+```{r}
+library(psych)
+library(GPArotation)
+correlations = cor(df)
+cortest.bartlett(correlations, n = nrow(df))
+```
+
+*Test interpretation*: With p value < 0.05, FA analysis might be useful for this data set.
+
+### Test Sampling adequacy using KMO test and interpret the results.
+
+$H_0$: No significant factors in data
+$H_a$: Significant factor.
+
+```{r}
+km = KMO(correlations)
+km$MSA
+```
+
+**Interpretation:** Overall MSA = 0.74 > 0.7 meaning there are significant factors in the data set
+
+### Number of factors
+
+```{r}
+plot.new()
+nofactors <- fa.parallel(df, fm = "ml")
+nofactors$fa.values
+```
+
+
+```{r}
+sum(nofactors$fa.values > .7) ## kaiser criterion
+```
+**Conclusion**: There would be a total of 2 factors
+
+
+```{r}
+fa_health = fa(df, nfactors=2, rotate = "Varimax", fm="ml")
+```
+
+```{r}
+fa_health$loadings 
+```
+
+```{r}
+loadings <- as.matrix(fa_health$loadings) # Alternatively, try unclass(fa_health$loadings)
+
+loadings_filtered <- ifelse(abs(loadings) < 0.4, NA, loadings)
+
+print(loadings_filtered, digits = 3)
+```
+### Diagram of Factors
+
+```{r}
+fa.diagram(fa_health)
+```
+### Name of latent factors:
+
+According to the content of the questions, we can say that:
+
+- Latent Factor ML2: Questions related to physical health
+
+- Latent Factor ML1: Questions related to emotional health and connections
+
+# 4. Report the mean and standard deviation of the average scores of subjects for the factors identified above
+
+
+
+```{r}
+vegetarian_ml1 <- dfraw[dfraw$diet == "Vegetarian", 1:5]
+vegetarian_ml2 <- dfraw[dfraw$diet == "Vegetarian", 6:15]
+
+nonvege_ml1 <- dfraw[dfraw$diet == "Non-Vegetarian", 1:5]
+nonvege_ml2 <- dfraw[dfraw$diet == "Non-Vegetarian", 6:15]
+
+```
+
+```{r}
+# Calculate and print column means and standard deviations for each subset
+# For Vegetarian_ml1
+colMeans(vegetarian_ml1)
+apply(vegetarian_ml1, 2, sd)
+```
+
+
+```{r}
+# For Vegetarian_ml2
+colMeans(vegetarian_ml2)
+apply(vegetarian_ml2, 2, sd)
+```
+
+```{r}
+# For NonVegetarian_ml1
+colMeans(nonvege_ml1)
+apply(nonvege_ml1, 2, sd)
+```
+
+
+```{r}
+# For NonVegetarian_ml2
+colMeans(nonvege_ml2)
+apply(nonvege_ml2, 2, sd)
+```
+
+
+
+
